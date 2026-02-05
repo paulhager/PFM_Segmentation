@@ -32,7 +32,7 @@ class DoraLinear(nn.Module):
         # So lora_a @ lora_b: [in_features, r] @ [r, out_features] = [in_features, out_features]
         self.lora_a = nn.Parameter(torch.zeros(in_features, r), requires_grad=True)
         self.lora_b = nn.Parameter(torch.zeros(r, out_features), requires_grad=True)
-        self.scale = lora_alpha
+        self.scale = lora_alpha / r
 
         # Dora magnitude scaling parameter
         self.m = nn.Parameter(torch.ones(1), requires_grad=True)  # Scalar magnitude

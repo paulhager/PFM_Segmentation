@@ -78,12 +78,19 @@ class DiceLoss(nn.Module):
         # Convert predictions to probabilities
         pred = F.softmax(pred, dim=1)
         
-        # One-hot encode target
+        # Create mask for valid pixels (BEFORE one_hot to avoid index out of bounds)
         num_classes = pred.shape[1]
-        target_one_hot = F.one_hot(target, num_classes).permute(0, 3, 1, 2).float()
+        mask = (target != self.ignore_index)
         
-        # Create mask for valid pixels
-        mask = (target != self.ignore_index).unsqueeze(1).float()
+        # Clone target and replace ignore_index with 0 for safe one_hot encoding
+        target_safe = target.clone()
+        target_safe[~mask] = 0
+        
+        # One-hot encode target (now safe because all values are in [0, num_classes-1])
+        target_one_hot = F.one_hot(target_safe, num_classes).permute(0, 3, 1, 2).float()
+        
+        # Apply mask
+        mask = mask.unsqueeze(1).float()
         pred = pred * mask
         target_one_hot = target_one_hot * mask
         
@@ -132,12 +139,19 @@ class IoULoss(nn.Module):
         # Convert predictions to probabilities
         pred = F.softmax(pred, dim=1)
         
-        # One-hot encode target
+        # Create mask for valid pixels (BEFORE one_hot to avoid index out of bounds)
         num_classes = pred.shape[1]
-        target_one_hot = F.one_hot(target, num_classes).permute(0, 3, 1, 2).float()
+        mask = (target != self.ignore_index)
         
-        # Create mask for valid pixels
-        mask = (target != self.ignore_index).unsqueeze(1).float()
+        # Clone target and replace ignore_index with 0 for safe one_hot encoding
+        target_safe = target.clone()
+        target_safe[~mask] = 0
+        
+        # One-hot encode target (now safe because all values are in [0, num_classes-1])
+        target_one_hot = F.one_hot(target_safe, num_classes).permute(0, 3, 1, 2).float()
+        
+        # Apply mask
+        mask = mask.unsqueeze(1).float()
         pred = pred * mask
         target_one_hot = target_one_hot * mask
         
@@ -246,17 +260,22 @@ class BCEWithLogitsLoss(nn.Module):
         Returns:
             torch.Tensor: Loss value
         """
-        # Convert target to one-hot encoding
+        # Create mask for valid pixels (BEFORE one_hot to avoid index out of bounds)
         num_classes = pred.shape[1]
-        target_one_hot = F.one_hot(target, num_classes).permute(0, 3, 1, 2).float()
+        mask = (target != self.ignore_index)
         
-        # Create mask for valid pixels
-        mask = (target != self.ignore_index).unsqueeze(1).float()
+        # Clone target and replace ignore_index with 0 for safe one_hot encoding
+        target_safe = target.clone()
+        target_safe[~mask] = 0
+        
+        # Convert target to one-hot encoding (now safe)
+        target_one_hot = F.one_hot(target_safe, num_classes).permute(0, 3, 1, 2).float()
         
         # Apply BCE loss to each class
         loss = self.bce_loss(pred, target_one_hot)
         
         # Apply mask to ignore invalid pixels
+        mask = mask.unsqueeze(1).float()
         loss = loss * mask
         
         if self.reduction == 'mean':

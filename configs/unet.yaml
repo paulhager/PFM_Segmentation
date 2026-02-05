@@ -3,15 +3,15 @@
 
 # Dataset configuration
 dataset:
-  json_file: "/mnt/sdb/chenwm/PFM_Segmentation/dataset_json/BCSS.json"  # Path to the JSON configuration file
-  num_classes: 22  # Number of classes; must match num_classes in the JSON file
+  json_file: "/mnt/sdb/chenwm/PFM_Segmentation/dataset_json/cpm15.json"  # Path to the JSON configuration file
+  num_classes: 2  # Number of classes; must match num_classes in the JSON file
   ignore_index: 255  # Index value to ignore during training
 
 system:
   num_workers: 2  # Number of worker threads for data loading
   pin_memory: true  # Whether to use pin_memory to accelerate data loading
   seed: 42  
-  device: "cuda:7"  # Device to use, 'cuda' or 'cpu'
+  device: "cuda:0"  # Device to use, 'cuda' or 'cpu'
 
 # Model configuration for UNet
 model:
@@ -24,26 +24,29 @@ model:
   bilinear: true  # Whether to use bilinear upsampling (default: true)
   
   # Required for UNet
-  num_classes: 22  # Must match num_classes in the JSON file
+  num_classes: 2  # Must match num_classes in the JSON file
+  
+  # Finetune mode - UNet uses 'full' mode (train entire model)
+  finetune_mode:
+    type: full  # UNet trains from scratch, so use 'full' mode
   
   # Note: For UNet, the following PFM-specific parameters are NOT required:
   # - pfm_weights_path (not needed for UNet)
   # - emb_dim (not needed for UNet)
-  # - finetune_mode (not needed for UNet)
 
 # Training configuration
 training:
   batch_size: 4
   epochs: 150
-  learning_rate: 0.001
-  weight_decay: 0.0001
+  learning_rate: 0.0001
+  weight_decay: 0.00001
   use_amp: true  # Whether to use automatic mixed precision (AMP) for training
   accumulate_grad_batches: 1  # Number of batches to accumulate gradients over before performing an optimizer step
   clip_grad_norm: 5.0  # Gradient clipping value to prevent exploding gradients
   
   # Data augmentation
   augmentation:
-    RandomResizedCropSize: 944  # Input image size for training (can be any size for UNet)
+    RandomResizedCropSize: 384  # Input image size for training (can be any size for UNet)
 
   # Optimizer settings
   optimizer: 
@@ -63,7 +66,7 @@ validation:
   eval_interval: 1  # Validate every N epochs
   batch_size: 4
   augmentation:
-    ResizedSize: 944  # Input image size for validation (can be any size for UNet)
+    ResizedSize: 384  # Input image size for validation (can be any size for UNet)
   
 logging:
   log_dir: "/mnt/sdb/chenwm/PFM_Segmentation/logs_unet" 

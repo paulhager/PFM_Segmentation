@@ -46,7 +46,7 @@ model:
 # Training configuration
 training:
   batch_size: 8
-  epochs: 1
+  epochs: 100
   learning_rate: 0.001
   weight_decay: 0.0001
   use_amp: true  # Whether to use automatic mixed precision (AMP) for training

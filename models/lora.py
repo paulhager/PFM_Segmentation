@@ -31,7 +31,7 @@ class LoRALinear(nn.Module):
         # LoRA: low-rank adaptor
         self.lora_a = nn.Parameter(torch.zeros(in_features, r), requires_grad=True)
         self.lora_b = nn.Parameter(torch.zeros(r, out_features), requires_grad=True)
-        self.scale = lora_alpha
+        self.scale = lora_alpha / r
 
         # initialization
         self.reset_parameters()

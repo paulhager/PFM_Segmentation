@@ -1,11 +1,30 @@
-# 🩺 Pathology Foundation Models Meet Semantic Segmentation
+# 🩺 To What Extent Do Token-Level Representations from Pathology Foundation Models Improve Dense Prediction?
+
+**Weiming Chen\*<sup>1</sup>, Xitong Ling\*<sup>1</sup>, Xidong Wang<sup>2</sup>, Zhenyang Cai<sup>2</sup>, Yijia Guo<sup>3</sup>, Mingxi Fu<sup>1</sup>, Ziyi Zeng<sup>2</sup>, Minxi Ouyang<sup>1</sup>, Jiawen Li<sup>1</sup>, Yizhi Wang<sup>1</sup>, Tian Guan<sup>1</sup>, Benyou Wang<sup>#2</sup>, Yonghong He<sup>#1</sup>**
+
+<sub>\* Equal contribution&emsp;# Corresponding authors</sub>
+
+<sup>1</sup>Tsinghua University, Shenzhen &bull; <sup>2</sup>CUHK, Shenzhen &bull; <sup>3</sup>Peking University, Beijing
+
+<p align="center">
+  <a href='https://arxiv.org/abs/2602.03887'>
+  <img src='https://img.shields.io/badge/Arxiv-2602.03887-A42C25?style=flat&logo=arXiv&logoColor=A42C25'></a> 
+  <a href='https://m4a1tastegood.github.io/PFM-DenseBench'>
+  <img src='https://img.shields.io/badge/Project-Page-%23df5b46?style=flat&logo=Google%20chrome&logoColor=%23df5b46'></a> 
+  <a href='https://github.com/lingxitong/PFM_Segmentation'>
+  <img src='https://img.shields.io/badge/GitHub-Code-black?style=flat&logo=github&logoColor=white'></a> 
+  <a href="" target='_blank'>
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=lingxitong.PFM_Segmentation&left_color=gray&right_color=%2342b983"></a> 
+</p>
+
+---
 
 A comprehensive semantic segmentation framework based on Pathology Foundation Models (PFMs), designed specifically for pathological image analysis, supporting multiple state-of-the-art pathology foundation models with complete training, inference, and evaluation capabilities.
 
 ## 🌟 Features
 
-- 🧬 **Support for SOTA Pathology Foundation Models**: uni_v1, uni_v2, conch_v1_5, gigapath, virchow_v2
-- 🔧 **Flexible Fine-tuning Strategies**: LoRA, full parameter fine-tuning, frozen backbone
+- 🧬 **Support for SOTA Pathology Foundation Models**: uni_v1, uni_v2, virchow_v1, virchow_v2, conch_v1_5, conch_v1, midnight12k, lunit_vits8, musk, PathOrchestra, gigapath, phikon, patho3dmatrix-vision, phikon_v2, hoptimus_0, hoptimus_1, kaiko-vitl14, hibou_l
+- 🔧 **Flexible Fine-tuning Strategies**: LoRA, DoRA, full parameter fine-tuning, frozen backbone, CNN adapter, Transformer adapter
 - 📊 **Complete Training Pipeline**: Mixed precision training, learning rate scheduling, gradient accumulation
 - 🎯 **Advanced Data Augmentation**: Integrated 10+ advanced data augmentations including spatial, color, and noise transformations
 - 📈 **Comprehensive Evaluation Metrics**: Integrated 10+ evaluation metrics including IoU/Dice and more
@@ -87,9 +106,9 @@ model:
   # Options:
   # - "uni_v1"       : UNI model version 1 (1024 dim)
   # - "uni_v2"       : UNI model version 2 (1536 dim)
-  # - "conch_v1"     : Conch model version 1 (1024 dim)
-  # - "conch_v1_5"   : Conch model version 1.5 (768 dim)
-  # - "virchow_v1"   : Virchow model version 2 (1280 dim)
+  # - "conch_v1"     : Conch model version 1 (768 dim)
+  # - "conch_v1_5"   : Conch model version 1.5 (1024 dim)
+  # - "virchow_v1"   : Virchow model version 1 (1280 dim)
   # - "virchow_v2"   : Virchow model version 2 (1280 dim)
   # - "phikon"       : Phikon model (768 dim)
   # - "phikon_v2"    : Phikon-v2 model (1024 dim)
@@ -100,8 +119,8 @@ model:
   # - "kaiko-vitl14" : Kaiko-ViT-L14 model (1024 dim)
   # - "lunit_vits8"  : Lunit-S8 model (384 dim)
   # - 'musk'         : MUSK model (1024 dim)
-  # - "patho3dmatrix-vision": Patho3DMatrix-Vision model (1536 dim)
-  # - "pathorchestra": PathOrchestra model (1536 dim)
+  # - "patho3dmatrix-vision": Patho3DMatrix-Vision model (1024 dim)
+  # - "PathOrchestra": PathOrchestra model (1024 dim)
   # - "hibou_l"     : Hibou-Large model (1024 dim)
   
   
@@ -110,8 +129,8 @@ model:
   # Corresponding embedding dimensions for each model:
   # midnight12k/hoptimus_0/hoptimus_1/uni_v2/gigapath: 1536
   # virchow_v1/virchow_v2: 1280
-  # uni_v1/hibou_l/musk/phikon_v2/kaiko-vitl14/conch_v1/patho3dmatrix-vision: 1024
-  # conch_v1_5/phikon: 768
+  # uni_v1/hibou_l/musk/phikon_v2/kaiko-vitl14/patho3dmatrix-vision/PathOrchestra/conch_v1_5: 1024
+  # conch_v1/phikon: 768
   # lunit_vits8: 384
   
   pfm_weights_path: '/path/to/pytorch_model.bin'  # Path to pre-trained weights file
@@ -121,11 +140,14 @@ model:
     type: "lora"          # Fine-tuning mode
     # Options:
     # - "lora"   : LoRA low-rank adaptation, parameter efficient
+    # - "dora"   : DoRA adaptation, parameter efficient
     # - "full"   : Full parameter fine-tuning, best performance but requires more memory
     # - "frozen" : Frozen backbone, only train segmentation head
+    # - "cnn_adapter" : CNN adapter fine-tuning
+    # - "transformer_adapter" : Transformer adapter fine-tuning
     
-    rank: 16              # LoRA rank, only used when type is "lora"
-    alpha: 1.0            # LoRA scaling factor, only used when type is "lora"
+    rank: 16              # LoRA/DoRA rank, only used when type is "lora" or "dora"
+    alpha: 16             # LoRA/DoRA scaling factor, only used when type is "lora" or "dora"
   
   num_classes: 3                  # Number of segmentation classes, must match dataset.num_classes
 ```
@@ -149,8 +171,8 @@ training:
   augmentation:
     RandomResizedCropSize: 512     # Random crop size
     # Note: Different PFM models have input size requirements
-    # virchow_v1,virchow_v2,uni_v2,midnight12k,kaiko-vitl14,hibou_l,H-optimus-1,H-optimus-0: must be a multiple of 14 (token_size) 
-    # uni_v1,conch_v1_5,gigapath,conch_v1 ,phikon,phikon_v2,patho3dmatrix-vision: must be a multiple of 16 (token_size) 
+    # virchow_v1,virchow_v2,uni_v2,midnight12k,kaiko-vitl14,hibou_l,hoptimus_0,hoptimus_1: must be a multiple of 14 (token_size) 
+    # uni_v1,conch_v1_5,gigapath,conch_v1,phikon,phikon_v2,patho3dmatrix-vision,PathOrchestra: must be a multiple of 16 (token_size) 
     # lunit_vits8: must be a multiple of 8 (token_size)
     # special: musk: 384
   
@@ -179,8 +201,8 @@ validation:
   augmentation:
     ResizedSize: 512      # Image size during validation
     # Note: Different PFM models have input size requirements
-    # virchow_v1,virchow_v2,uni_v2,midnight12k,kaiko-vitl14,hibou_l,H-optimus-1,H-optimus-0: must be a multiple of 14 (token_size) 
-    # uni_v1,conch_v1_5,gigapath,conch_v1 ,phikon,phikon_v2,patho3dmatrix-vision: must be a multiple of 16 (token_size) 
+    # virchow_v1,virchow_v2,uni_v2,midnight12k,kaiko-vitl14,hibou_l,hoptimus_0,hoptimus_1: must be a multiple of 14 (token_size) 
+    # uni_v1,conch_v1_5,gigapath,conch_v1,phikon,phikon_v2,patho3dmatrix-vision,PathOrchestra: must be a multiple of 16 (token_size) 
     # lunit_vits8: must be a multiple of 8 (token_size)
     # special: musk: 384
 ```
@@ -325,20 +347,37 @@ output_dir/
 | UNI2-h | 1.1B | 1536 | 14×14 | [MahmoodLab/UNI2-h](https://huggingface.co/MahmoodLab/UNI2-h) |
 | CONCH | 90M | 768 | 16×16 | [MahmoodLab/CONCH](https://huggingface.co/MahmoodLab/CONCH) |
 | CONCHv1.5 | 307M | 1024 | 16×16 | [MahmoodLab/conchv1_5](https://huggingface.co/MahmoodLab/conchv1_5) |
-| Virchow | 632M | 2560 | 14×14 | [paige-ai/Virchow](https://huggingface.co/paige-ai/Virchow) |
-| Virchow2 | 632M | 2560 | 14×14 | [paige-ai/Virchow2](https://huggingface.co/paige-ai/Virchow2) |
+| Virchow | 632M | 1280 | 14×14 | [paige-ai/Virchow](https://huggingface.co/paige-ai/Virchow) |
+| Virchow2 | 632M | 1280 | 14×14 | [paige-ai/Virchow2](https://huggingface.co/paige-ai/Virchow2) |
 | Phikon | 85.8M | 768 | 16×16 | [owkin/phikon](https://huggingface.co/owkin/phikon) |
 | Phikon-v2 | 300M | 1024 | 16×16 | [owkin/phikon-v2](https://huggingface.co/owkin/phikon-v2) |
 | Prov-Gigapath | 1.1B | 1536 | 16×16 | [prov-gigapath/prov-gigapath](https://huggingface.co/prov-gigapath/prov-gigapath) |
 | H-Optimus-0 | 1.1B | 1536 | 14×14 | [bioptimus/H-optimus-0](https://huggingface.co/bioptimus/H-optimus-0) |
 | H-Optimus-1 | 1.1B | 1536 | 14×14 | [bioptimus/H-optimus-1](https://huggingface.co/bioptimus/H-optimus-1) |
 | MUSK | - | 1024 | 32×32 | [xiangjx/musk](https://huggingface.co/xiangjx/musk) |
-| Midnight-12k | - | 3072 | 14×14 | [kaiko-ai/midnight](https://huggingface.co/kaiko-ai/midnight) |
+| Midnight-12k | - | 1536 | 14×14 | [kaiko-ai/midnight](https://huggingface.co/kaiko-ai/midnight) |
 | Kaiko | Various | 384/768/1024 | Various (8×8 or 16×16 or 14×14) | [1aurent/kaikoai-models-66636c99d8e1e34bc6dcf795](https://huggingface.co/collections/1aurent/kaikoai-models) |
 | Lunit | 21.7M | 384 | 8×8 | [1aurent/vit_small_patch8_224.lunit_dino](https://huggingface.co/1aurent/vit_small_patch8_224.lunit_dino) |
 | Hibou | - | 1024 | 14×14 | [histai/hibou-L](https://huggingface.co/histai/hibou-L) |
 | PathOrchestra | 307M | 1024 | 16×16 | [AI4Pathology/PathOrchestra](https://huggingface.co/AI4Pathology/PathOrchestra) |
 | patho3dmatrix-vision | 307M | 1024 | 16×16 | - |
+
+## 📖 Citation
+
+If you find this work useful, please consider citing:
+
+```bibtex
+@misc{chen2026extenttokenlevelrepresentationspathology,
+  title={To What Extent Do Token-Level Representations from Pathology Foundation Models Improve Dense Prediction?},
+  author={Weiming Chen and Xitong Ling and Xidong Wang and Zhenyang Cai and Yijia Guo and Mingxi Fu and Ziyi Zeng and Minxi Ouyang and Jiawen Li and Yizhi Wang and Tian Guan and Benyou Wang and Yonghong He},
+  year={2026},
+  eprint={2602.03887},
+  archivePrefix={arXiv},
+  primaryClass={eess.IV},
+  url={https://arxiv.org/abs/2602.03887},
+}
+```
+
 
 ## 🤝 Contributing
 
@@ -349,6 +388,7 @@ Welcome to submit issues and feature requests! Please check the contribution gui
 If you have questions or suggestions, please contact us through:
 - Submit GitHub Issue
 - Send email to: [lingxt23@mails.tsinghua.edu.cn] or [cwm25@mails.tsinghua.edu.cn]
+
 
 ---
 
